@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boarding Pass to Forever</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --navy: #0b1e3d;
+    --navy-deep: #071426;
+    --cream: #f3ede1;
+    --paper: #f8f4ea;
+    --amber: #f4b942;
+    --teal: #1e7a6f;
+    --stamp: #c4453b;
+    --ink: #1a1a1a;
+    --line: rgba(243,237,225,0.18);
+  }
+
+  *{ box-sizing: border-box; }
+
+  html{ scroll-behavior: smooth; }
+
+  body{
+    margin: 0;
+    background: var(--navy-deep);
+    color: var(--cream);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  }
+
+  a{ color: inherit; }
+
+  /* ---------- shared bits ---------- */
+  .eyebrow{
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    font-size: 11px;
+    color: var(--amber);
+    opacity: 0.85;
+  }
+
+  .section{
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 90px 24px;
+  }
+
+  /* ================= HERO / SPLIT-FLAP BOARD ================= */
+  .board-wrap{
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    background:
+      radial-gradient(ellipse at 50% -10%, rgba(244,185,66,0.08), transparent 60%),
+      linear-gradient(var(--navy-deep), var(--navy));
+    position: relative;
+    text-align: center;
+  }
+
+  .board-wrap::before{
+    content: "";
+    position: absolute; inset: 0;
+    background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 3px);
+    pointer-events: none;
+  }
+
+  .board{
+    border: 1px solid var(--line);
+    background: linear-gradient(180deg, #0c223f, #081527);
+    border-radius: 6px;
+    padding: 28px 20px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5), inset 0 0 40px rgba(0,0,0,0.4);
+    max-width: 720px;
+    width: 100%;
+  }
+
+  .flap-row{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    margin: 14px 0 26px;
+  }
+
+  .flap{
+    position: relative;
+    width: 34px;
+    height: 46px;
+    background: #0e0e10;
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 26px;
+    color: var(--amber);
+    overflow: hidden;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.05);
+  }
+  .flap::after{
+    content:"";
+    position: absolute; left:0; right:0; top: 50%;
+    height: 2px;
+    background: rgba(0,0,0,0.55);
+    transform: translateY(-1px);
+  }
+  .flap.space{ background: transparent; box-shadow: none; width: 16px; }
+
+  .board-sub{
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: rgba(243,237,225,0.55);
+    margin-bottom: 22px;
+  }
+
+  .ticket-info{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    border-top: 1px dashed var(--line);
+    padding-top: 20px;
+    text-align: left;
+  }
+  .ticket-info .label{ font-size: 10px; letter-spacing: 0.15em; color: var(--amber); opacity: 0.8; margin-bottom: 4px; font-family: 'Space Mono', monospace;}
+  .ticket-info .value{ font-size: 14px; font-weight: 600; }
+
+  .scroll-cue{
+    margin-top: 42px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: rgba(243,237,225,0.5);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .scroll-cue span{
+    display: block;
+    width: 1px; height: 30px;
+    background: linear-gradient(var(--amber), transparent);
+    animation: pulse-down 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse-down{
+    0%,100%{ opacity: 0.2; transform: scaleY(0.6); transform-origin: top;}
+    50%{ opacity: 1; transform: scaleY(1); transform-origin: top;}
+  }
+
+  /* ================= GALLERY / STAMPS ================= */
+  .gallery-head{ text-align: center; margin-bottom: 50px; }
+  .gallery-head h2{
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: clamp(28px, 4vw, 42px);
+    margin: 8px 0 0;
+    color: var(--cream);
+  }
+
+  .stamps{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 34px;
+  }
+
+  .stamp-card{
+    background: var(--paper);
+    color: var(--ink);
+    border-radius: 4px;
+    padding: 16px 16px 20px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+    transform: rotate(var(--tilt, -2deg));
+    position: relative;
+  }
+  .stamp-card:nth-child(2){ --tilt: 1.5deg; }
+  .stamp-card:nth-child(3){ --tilt: -1deg; }
+  .stamp-card:nth-child(4){ --tilt: 2deg; }
+  .stamp-card:nth-child(5){ --tilt: -1.5deg; }
+  .stamp-card:nth-child(6){ --tilt: 1deg; }
+
+  .stamp-frame{
+    aspect-ratio: 4/5;
+    border: 3px dashed var(--stamp);
+    border-radius: 3px;
+    padding: 8px;
+    position: relative;
+  }
+  .stamp-frame img{
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: sepia(0.15) contrast(1.02);
+  }
+  .stamp-frame .no-photo{
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: #999;
+    text-align: center;
+    padding: 10px;
+  }
+
+  .stamp-mark{
+    position: absolute;
+    top: -14px; right: -10px;
+    width: 62px; height: 62px;
+    border: 2px solid var(--stamp);
+    border-radius: 50%;
+    color: var(--stamp);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 0.05em;
+    transform: rotate(12deg);
+    background: rgba(255,255,255,0.85);
+    line-height: 1.2;
+  }
+
+  .caption{
+    margin-top: 14px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    font-style: italic;
+    line-height: 1.45;
+    padding: 8px 4px 2px;
+    color: #333;
+  }
+  .caption .cap-date{
+    display: block;
+    font-family: 'Space Mono', monospace;
+    font-style: normal;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--stamp);
+    margin-bottom: 6px;
+  }
+
+  /* ================= FLIGHT PATH ================= */
+  .route-wrap{
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 70px 24px 100px;
+  }
+  .route-head{ text-align: center; margin-bottom: 10px; }
+  .route-svg-wrap{ position: relative; }
+  svg#route-svg{ width: 100%; height: auto; display: block; }
+  #plane-icon{ transform-origin: center; }
+
+  .waypoint-label{
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    fill: var(--cream);
+    opacity: 0.85;
+  }
+  .waypoint-sub{
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 15px;
+    fill: var(--amber);
+  }
+
+  /* ================= LETTER / BOARDING PASS ================= */
+  .pass-wrap{
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px 110px;
+  }
+  .pass{
+    display: grid;
+    grid-template-columns: 1fr 220px;
+    background: var(--paper);
+    color: var(--ink);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 40px 90px rgba(0,0,0,0.45);
+  }
+  @media (max-width: 720px){
+    .pass{ grid-template-columns: 1fr; }
+    .pass-stub{ order: -1; }
+  }
+
+  .pass-main{
+    padding: 46px 42px 50px;
+    position: relative;
+  }
+  .pass-main::before{
+    content: "";
+    position: absolute; top: 0; bottom: 0; right: 0;
+    width: 1px;
+    background-image: linear-gradient(to bottom, transparent 0, rgba(0,0,0,0.25) 6px, transparent 6px);
+    background-size: 1px 14px;
+    background-repeat: repeat-y;
+  }
+
+  .pass-kicker{
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--stamp);
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+
+  .letter-body{
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 19px;
+    line-height: 1.75;
+    color: #241f1a;
+  }
+  .letter-body p{ margin: 0 0 20px; }
+  .letter-body .drop{
+    float: left;
+    font-size: 62px;
+    line-height: 0.8;
+    padding: 6px 10px 0 0;
+    font-weight: 600;
+    color: var(--stamp);
+  }
+  .signoff{
+    margin-top: 34px;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 22px;
+    text-align: right;
+  }
+  .signoff .name{
+    display: block;
+    font-size: 30px;
+    margin-top: 6px;
+    font-weight: 600;
+    color: var(--stamp);
+  }
+
+  .pass-stub{
+    background: var(--navy);
+    color: var(--cream);
+    padding: 34px 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    position: relative;
+  }
+  .pass-stub .stub-row .label{
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--amber);
+    opacity: 0.85;
+    margin-bottom: 3px;
+  }
+  .pass-stub .stub-row .value{
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .barcode{
+    margin-top: auto;
+    height: 46px;
+    background: repeating-linear-gradient(90deg, var(--cream) 0px, var(--cream) 2px, transparent 2px, transparent 5px, var(--cream) 5px, var(--cream) 6px, transparent 6px, transparent 9px);
+    opacity: 0.85;
+    border-radius: 2px;
+  }
+
+  /* ================= PLAYER ================= */
+  .player-wrap{
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 20px 24px 120px;
+    text-align: center;
+  }
+  .player{
+    background: linear-gradient(180deg, #0e2543, #081527);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 26px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+  }
+  .play-btn{
+    flex: none;
+    width: 58px; height: 58px;
+    border-radius: 50%;
+    border: 2px solid var(--amber);
+    background: transparent;
+    color: var(--amber);
+    font-size: 20px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s, color 0.2s, transform 0.15s;
+  }
+  .play-btn:hover{ background: var(--amber); color: var(--navy-deep); transform: scale(1.05); }
+  .play-btn:active{ transform: scale(0.96); }
+
+  .player-meta{ text-align: left; flex: 1; min-width: 0; }
+  .player-meta .track{ font-weight: 600; font-size: 15px; }
+  .player-meta .sub{ font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: rgba(243,237,225,0.55); margin-top: 4px; }
+
+  .bars{
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 26px;
+    flex: none;
+  }
+  .bars span{
+    width: 3px;
+    background: var(--amber);
+    opacity: 0.4;
+    border-radius: 2px;
+    animation: bounce 1.1s ease-in-out infinite;
+    animation-play-state: paused;
+  }
+  .player.playing .bars span{ animation-play-state: running; opacity: 1; }
+  .bars span:nth-child(1){ height: 30%; animation-delay: 0s; }
+  .bars span:nth-child(2){ height: 70%; animation-delay: 0.15s; }
+  .bars span:nth-child(3){ height: 45%; animation-delay: 0.3s; }
+  .bars span:nth-child(4){ height: 90%; animation-delay: 0.1s; }
+  .bars span:nth-child(5){ height: 55%; animation-delay: 0.25s; }
+  @keyframes bounce{
+    0%,100%{ transform: scaleY(0.4); }
+    50%{ transform: scaleY(1); }
+  }
+
+  footer{
+    text-align: center;
+    padding: 30px 20px 50px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: rgba(243,237,225,0.35);
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ HERO: SPLIT-FLAP BOARD ============ -->
+<section class="board-wrap">
+  <div class="eyebrow">Departure Notice</div>
+  <div class="board">
+    <div class="flap-row" id="flap-row"></div>
+    <div class="board-sub">NOW BOARDING · GATE ❤ · ALL PASSENGERS</div>
+    <div class="ticket-info">
+      <div>
+        <div class="label">FROM</div>
+        <div class="value">MY HEART</div>
+      </div>
+      <div>
+        <div class="label">TO</div>
+        <div class="value">FOREVER</div>
+      </div>
+      <div>
+        <div class="label">DATE</div>
+        <div class="value">01 AUG</div>
+      </div>
+      <div>
+        <div class="label">SEAT</div>
+        <div class="value">4-EVER</div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-cue"><span></span>SCROLL TO BOARD</div>
+</section>
+
+<!-- ============ GALLERY: PASSPORT STAMPS ============ -->
+<section class="section" id="gallery">
+  <div class="gallery-head">
+    <div class="eyebrow">Passport Stamps</div>
+    <h2>Places we've already been, together</h2>
+  </div>
+
+  <div class="stamps">
+    <div class="stamp-card">
+      <div class="stamp-frame">
+        <img src="photo1.jpeg" alt="21.04.2026" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'no-photo',textContent:'Add photo1.jpg\nnext to index.html'}))">
+        <div class="stamp-mark">MEMORY<br>№ 01</div>
+      </div>
+      <div class="caption"><span class="cap-date">21 / 04 / 2026</span>Proposed you on this day, again.</div>
+    </div>
+
+    <div class="stamp-card">
+      <div class="stamp-frame">
+        <img src="photo2.jpg" alt="25.04.2026" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'no-photo',textContent:'Add photo2.jpg\nnext to index.html'}))">
+        <div class="stamp-mark">MEMORY<br>№ 02</div>
+      </div>
+      <div class="caption"><span class="cap-date">25 / 04 / 2026</span>Can you believe apan same week mein 2 baar mile!!!! We went to Banglore Canteen, tera film institute ka visit tha.</div>
+    </div>
+
+    <div class="stamp-card">
+      <div class="stamp-frame">
+        <img src="photo3.jpg" alt="20.05.2026" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'no-photo',textContent:'Add photo3.jpg\nnext to index.html'}))">
+        <div class="stamp-mark">MEMORY<br>№ 03</div>
+      </div>
+      <div class="caption"><span class="cap-date">20 / 05 / 2026</span>Bookavibe gaye thee, so called padhai karne lol, and I got distracted aur maine aakhir tak padhai ki hi nahi. Then we had a beautiful ride ghar jaate wakt hehe.</div>
+    </div>
+
+    <div class="stamp-card">
+      <div class="stamp-frame">
+        <img src="photo4.jpg" alt="14.06.2026" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'no-photo',textContent:'Add photo4.jpg\nnext to index.html'}))">
+        <div class="stamp-mark">MEMORY<br>№ 04</div>
+      </div>
+      <div class="caption"><span class="cap-date">14 / 06 / 2026</span>Apni movie date after sooo long, Obsession dekhi 😭 and late pohoche apan, again had a beautiful ride ghar jaate hue hehehe.</div>
+    </div>
+
+    <div class="stamp-card">
+      <div class="stamp-frame">
+        <img src="photo5.jpg" alt="22.06.2026" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'no-photo',textContent:'Add photo5.jpg\nnext to index.html'}))">
+        <div class="stamp-mark">MEMORY<br>№ 05</div>
+      </div>
+      <div class="caption"><span class="cap-date">22 / 06 / 2026</span>Aap mere ghar aaye, hawwwwwwwwwwwwwwwwwwwwww. We did so many things mhm mhm and you met Happy for the first time hehe.</div>
+    </div>
+
+    <div class="stamp-card">
+      <div class="stamp-frame">
+        <img src="photo6.jpg" alt="24.07.2026" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'no-photo',textContent:'Add photo6.jpg\nnext to index.html'}))">
+        <div class="stamp-mark">MEMORY<br>№ 06</div>
+      </div>
+      <div class="caption"><span class="cap-date">24 / 07 / 2026</span>Tere gharr hawwwwww 👀 bohottt kuch kiyaa yaha toh, we cuddled for so long and then you gave me a beautiful flower too, hehehehe.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FLIGHT PATH ============ -->
+<section class="route-wrap">
+  <div class="route-head">
+    <div class="eyebrow">Flight Path</div>
+  </div>
+  <div class="route-svg-wrap">
+    <svg id="route-svg" viewBox="0 0 900 260" preserveAspectRatio="xMidYMid meet">
+      <path id="route-path" d="M 40 210 C 200 60, 340 240, 460 130 S 700 20, 860 60"
+            fill="none" stroke="rgba(243,237,225,0.25)" stroke-width="2" stroke-dasharray="6 10" />
+      <circle cx="40" cy="210" r="5" fill="#f4b942" />
+      <circle cx="460" cy="130" r="5" fill="#f4b942" />
+      <circle cx="860" cy="60" r="5" fill="#f4b942" />
+      <text x="40" y="238" class="waypoint-label" text-anchor="middle">WHERE IT BEGAN</text>
+      <text x="460" y="158" class="waypoint-label" text-anchor="middle">WHERE WE ARE</text>
+      <text x="860" y="88" class="waypoint-label" text-anchor="middle">WHERE WE'RE GOING</text>
+      <g id="plane-icon" transform="translate(40,210)">
+        <text x="0" y="6" font-size="22" text-anchor="middle">✈️</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ============ LETTER AS BOARDING PASS ============ -->
+<section class="pass-wrap" id="letter">
+  <div class="pass">
+    <div class="pass-main">
+      <div class="pass-kicker">Boarding Pass · Passenger Message</div>
+      <div class="letter-body">
+        <p><span class="drop">H</span>appy Girlfriend's Day, Baby ❤️</p>
+        <p>I don't think I'll ever be able to thank you enough for coming into my life. Sometimes I just sit quietly and think about us, and honestly, I feel so lucky. Out of all the people in this world, somehow I got you. Aur believe me, that's something I'll never take for granted.</p>
+        <p>Thank you for every little effort you take for me. Thank you for listening to my endless bakwaas, for making time for me even when you're busy, for understanding me on days when even I don't understand myself, and for loving me in ways that you probably don't even realize. Teri har chhoti si effort mere liye bohot badi hoti hai. Shayad mai har baar express nahi kar pata, but I notice everything, and I appreciate all of it more than you'll ever know.</p>
+        <p>I know the past few days weren't the easiest for us. Communication kabhi kabhi thoda difficult ho gaya, hum dono thode frustrated bhi hue, aur chhoti chhoti misunderstandings bhi hui. But baby, mujhe ek cheez ka hamesha confidence tha. Yeh sirf ek phase tha. Humara love kabhi kam nahi hua. Din ke end pe, no matter kitna bhi argue kare ya kitna bhi upset ho jaaye, I still look at you and think, "Yahi toh meri ladki hai." And that's enough for me to keep fighting for us.</p>
+        <p>You know what's my favourite thing about us? We don't give up. We try. We talk. We learn. We make mistakes, we realise them, and we become a little better than yesterday. Mujhe kabhi tera perfect version nahi chahiye tha, because mai khud bhi perfect nahi hu. Mujhe bas tera real version chahiye. The one who laughs too much, gets angry sometimes, overthinks, loves deeply, and still chooses me every single day.</p>
+        <p>When I think about my future, I don't just think about getting a good job or becoming successful. I think about you being there for all of it. I want to build my life with you. I want us to work hard together, celebrate every achievement together, and support each other through every failure. I want to see you become everything you've ever dreamed of, and I want to be the loudest person clapping for you when you do.</p>
+        <p>One day, I want to marry you. I want to stand there, look at you, and know that after everything life threw at us, we still found our way to each other. I want to build a home with you, fill it with laughter, random arguments over silly things, late-night talks, and so much love that it never feels empty. I want to have kids with you someday and tell them how their mom has been my favourite person long before they were even born. I want them to grow up watching us choose each other every single day.</p>
+        <p>Aur ek din, jab mai tujhe apni family ke saath dekhunga na, I won't just introduce you. I'll be proud. Proud that the girl standing beside me is the woman I love with all my heart. Proud that I get to call you mine. Proud that I found someone as caring, kind and beautiful as you.</p>
+        <p>Thank you for accepting me with all my flaws. Thank you for staying even when loving me wasn't always easy. Thank you for believing in us. Thank you for making my ordinary days feel special just by being a part of them.</p>
+        <p>Baby, I don't know what the future has planned for us. Life will test us, we'll probably have more misunderstandings, more stressful days and more moments where things don't go the way we want. But if there's one thing I'm absolutely sure about, it's this... I never want to face any of it without you.</p>
+        <p>So on this Girlfriend's Day, I don't just want to say that I love you. I want to say that I'm grateful for you. I'm proud of you. I appreciate you. And no matter how much time passes, I'll keep choosing you, respecting you, growing with you, and loving you with the same heart that fell for you.</p>
+        <p>Happy Girlfriend's Day, my baby. ❤️</p>
+        <p>I love you today, I'll love you tomorrow, and I'll keep finding new reasons to love you for the rest of my life.</p>
+        <div class="signoff">Forever yours,<span class="name">Avadhut ❤️</span></div>
+      </div>
+    </div>
+    <div class="pass-stub">
+      <div class="stub-row"><div class="label">Passenger</div><div class="value">You, always</div></div>
+      <div class="stub-row"><div class="label">Class</div><div class="value">First — Forever</div></div>
+      <div class="stub-row"><div class="label">Flight</div><div class="value">BESTGF-0503</div></div>
+      <div class="stub-row"><div class="label">Gate</div><div class="value">❤ — Closing never</div></div>
+      <div class="barcode"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ AUDIO PLAYER ============ -->
+<section class="player-wrap">
+  <div class="eyebrow" style="margin-bottom:16px;">In-Flight Audio</div>
+  <div class="player" id="player">
+    <button class="play-btn" id="play-btn" aria-label="Play song">▶</button>
+    <div class="player-meta">
+      <div class="track">Our Song — Kaise Ab Kahein</div>
+      <div class="sub">TAP TO PLAY / PAUSE</div>
+    </div>
+    <div class="bars"><span></span><span></span><span></span><span></span><span></span></div>
+  </div>
+  <audio id="audio" src="song.mp3" preload="auto" loop></audio>
+</section>
+
+<footer>Made with love.<br>Avadhut.</footer>
+
+<script>
+  // ---------- Split-flap headline ----------
+  const HEADLINE = "GIRLFRIEND'S DAY";
+  const CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ'&";
+  const flapRow = document.getElementById('flap-row');
+
+  const flapEls = [];
+  [...HEADLINE].forEach((ch) => {
+    const el = document.createElement('div');
+    if(ch === ' '){
+      el.className = 'flap space';
+    } else {
+      el.className = 'flap';
+      el.textContent = ch;
+    }
+    flapRow.appendChild(el);
+    flapEls.push({el, target: ch});
+  });
+
+  function spinFlap(item, delay){
+    if(item.target === ' ') return;
+    let ticks = 8 + Math.floor(Math.random()*6);
+    let i = 0;
+    setTimeout(function run(){
+      if(i < ticks){
+        item.el.textContent = CHARSET[Math.floor(Math.random()*CHARSET.length)];
+        i++;
+        setTimeout(run, 55);
+      } else {
+        item.el.textContent = item.target;
+      }
+    }, delay);
+  }
+  flapEls.forEach((item, idx) => spinFlap(item, idx * 70));
+
+  // ---------- Audio: autoplay on open, with browser-safe fallback ----------
+  const audio = document.getElementById('audio');
+  const playBtn = document.getElementById('play-btn');
+  const playerEl = document.getElementById('player');
+
+  function tryPlay(){
+    const p = audio.play();
+    if(p !== undefined){
+      p.catch(() => { /* blocked until a user gesture happens, see fallback below */ });
+    }
+  }
+
+  // Attempt immediately when the page opens.
+  tryPlay();
+
+  // Most browsers block autoplay-with-sound until the visitor interacts once.
+  // The moment that happens anywhere on the page, start the song automatically.
+  function startOnFirstGesture(){
+    if(audio.paused) tryPlay();
+    window.removeEventListener('pointerdown', startOnFirstGesture);
+    window.removeEventListener('keydown', startOnFirstGesture);
+    window.removeEventListener('scroll', startOnFirstGesture);
+  }
+  window.addEventListener('pointerdown', startOnFirstGesture, { once: true });
+  window.addEventListener('keydown', startOnFirstGesture, { once: true });
+  window.addEventListener('scroll', startOnFirstGesture, { once: true, passive: true });
+
+  playBtn.addEventListener('click', () => {
+    if(audio.paused){
+      tryPlay();
+    } else {
+      audio.pause();
+    }
+  });
+  audio.addEventListener('play', () => {
+    playerEl.classList.add('playing');
+    playBtn.textContent = '❚❚';
+    playBtn.setAttribute('aria-label','Pause song');
+  });
+  audio.addEventListener('pause', () => {
+    playerEl.classList.remove('playing');
+    playBtn.textContent = '▶';
+    playBtn.setAttribute('aria-label','Play song');
+  });
+
+  // ---------- Plane follows path on scroll ----------
+  const path = document.getElementById('route-path');
+  const plane = document.getElementById('plane-icon');
+  const routeSection = document.querySelector('.route-wrap');
+  const pathLength = path.getTotalLength();
+
+  function updatePlane(){
+    const rect = routeSection.getBoundingClientRect();
+    const vh = window.innerHeight;
+    let progress = (vh - rect.top) / (rect.height + vh);
+    progress = Math.max(0, Math.min(1, progress));
+    const point = path.getPointAtLength(progress * pathLength);
+    const pointAhead = path.getPointAtLength(Math.min(pathLength, progress * pathLength + 1));
+    const angle = Math.atan2(pointAhead.y - point.y, pointAhead.x - point.x) * (180/Math.PI);
+    plane.setAttribute('transform', `translate(${point.x},${point.y}) rotate(${angle})`);
+  }
+  document.addEventListener('scroll', updatePlane, { passive: true });
+  window.addEventListener('resize', updatePlane);
+  updatePlane();
+</script>
+
+</body>
+</html>
